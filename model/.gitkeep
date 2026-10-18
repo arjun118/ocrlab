@@ -1,0 +1,2 @@
+# Local model cache directory
+# Model ONNX files and metadata reside here and copy into /app/model in Docker

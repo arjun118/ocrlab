@@ -1,0 +1,18 @@
+services:
+  ocrlab:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ocrlab:latest
+    container_name: ocrlab
+    ports:
+      - "8000:8000"
+    volumes:
+      # Attach host directory to persist SQLite DB and uploaded files
+      - ./data:/app/data
+    restart: unless-stopped
+    environment:
+      - INDRA_OCR_MODEL_DIR=/app/model
+      - INDRA_THREADS=8
+      - INDRA_HOST=0.0.0.0
+      - INDRA_PORT=8000

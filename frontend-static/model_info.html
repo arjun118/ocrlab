@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Indra OCR - Model Card & Benchmarks</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="brand-title">
+      <i class="nf nf-md-text_recognition"></i>
+      INDRA OCR
+    </div>
+    <nav class="main-nav">
+      <a href="index.html"><i class="nf nf-cod-terminal"></i> Studio</a>
+      <a href="batch.html"><i class="nf nf-md-layers_triple"></i> Batch</a>
+      <a href="model_info.html" class="active"><i class="nf nf-md-speedometer"></i> Benchmarks</a>
+    </nav>
+    <div class="header-meta">
+      <span class="status-badge"><span class="status-dot"></span> OmniParseBench 62.1</span>
+    </div>
+  </header>
+
+  <div style="padding: 1.5rem; overflow-y: auto;">
+
+  <h2>What is Indra OCR?</h2>
+  <p>Indra OCR is a <strong>1M-parameter</strong> OCR model that reads up to <strong>49 pages per second on CPU</strong>. It turns PDFs and images into structured Markdown, plain text, or JSON with bounding boxes, layout classifications, and reading order.</p>
+
+  <ul>
+    <li><strong>Throughput:</strong> 49 pages/s, 11&ndash;17&times; faster than Tesseract and PaddleOCR on the same machine.</li>
+    <li><strong>Latency:</strong> ~230 ms per page on 4 x86 vCPUs, 12&ndash;24&times; faster than alternatives.</li>
+    <li><strong>Accuracy:</strong> Scores 62.1 on OmniParseBench headline, beating PaddleOCR's full PP-StructureV3 pipeline (58.4).</li>
+    <li><strong>Layout &amp; Boxes:</strong> Bounding box for every line and layout block with semantic labels and reading order.</li>
+    <li><strong>Digital PDFs:</strong> Reads the PDF's text layer in any script (75+ language families) and OCRs only what is missing.</li>
+    <li><strong>Ultra Lightweight:</strong> ~18 MB total ONNX Runtime models, completely free of PyTorch.</li>
+  </ul>
+
+  <h2>Throughput Benchmark (AMD EPYC, CPU only)</h2>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Engine</th>
+        <th>4 cores</th>
+        <th>8 cores</th>
+        <th>16 cores</th>
+        <th>32 cores</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Indra OCR (auto)</strong></td>
+        <td><strong>7.3 pages/s</strong></td>
+        <td><strong>14.2 pages/s</strong></td>
+        <td><strong>27.2 pages/s</strong></td>
+        <td><strong>49.4 pages/s</strong></td>
+      </tr>
+      <tr>
+        <td>Indra OCR <code>--math</code></td>
+        <td>~5 pages/s</td>
+        <td>&ndash;</td>
+        <td>&ndash;</td>
+        <td>~30 pages/s</td>
+      </tr>
+      <tr>
+        <td>PaddleOCR PP-OCRv6 (RapidOCR)</td>
+        <td>0.65 pages/s</td>
+        <td>1.24 pages/s</td>
+        <td>2.42 pages/s</td>
+        <td>4.28 pages/s</td>
+      </tr>
+      <tr>
+        <td>Tesseract 5</td>
+        <td>0.78 pages/s</td>
+        <td>1.37 pages/s</td>
+        <td>2.27 pages/s</td>
+        <td>2.92 pages/s</td>
+      </tr>
+      <tr>
+        <td>PaddleOCR PP-StructureV3</td>
+        <td>&le; 0.022 pages/s</td>
+        <td>&le; 0.044 pages/s</td>
+        <td>&le; 0.089 pages/s</td>
+        <td>&le; 0.18 pages/s</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Accuracy on OmniParseBench (2,937 pages)</h2>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Engine</th>
+        <th>Headline</th>
+        <th>Text</th>
+        <th>Tables</th>
+        <th>Layout</th>
+        <th>Median Latency</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Indra OCR</strong></td>
+        <td>62.1</td>
+        <td>41.3</td>
+        <td><strong>56.4</strong></td>
+        <td><strong>88.6</strong></td>
+        <td><strong>228 ms</strong></td>
+      </tr>
+      <tr>
+        <td><strong>Indra OCR <code>--math</code></strong></td>
+        <td><strong>66.8</strong></td>
+        <td><strong>57.5</strong></td>
+        <td>54.8</td>
+        <td>88.1</td>
+        <td>~360 ms</td>
+      </tr>
+      <tr>
+        <td>PaddleOCR PP-StructureV3</td>
+        <td>58.4</td>
+        <td>55.6</td>
+        <td>47.8</td>
+        <td>71.7</td>
+        <td>40,958 ms</td>
+      </tr>
+      <tr>
+        <td>Tesseract 5</td>
+        <td>&ndash;</td>
+        <td>19.3</td>
+        <td>0.0</td>
+        <td>&ndash;</td>
+        <td>5,496 ms</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Language Support</h2>
+  <ul>
+    <li><strong>OCR for Scans &amp; Images:</strong> Latin (50+ languages), Cyrillic, Greek, Devanagari, Bengali, and Chinese (simplified and traditional).</li>
+    <li><strong>Text Layer (Digital PDFs):</strong> Any script. Verified on 75 language families including Arabic, Hebrew, Japanese, Korean, Hindi, and Southeast Asian scripts.</li>
+  </ul>
+
+  <h2>Layout Block Labels</h2>
+  <p>The layout model segments pages into structural blocks in reading order:</p>
+  <ul>
+    <li><code>Text</code>: Standard body paragraphs.</li>
+    <li><code>Section-Header</code>: Document headings and titles.</li>
+    <li><code>Page-Header</code> &amp; <code>Page-Footer</code>: Running margins and page numbers (optionally stripped unless furniture is kept).</li>
+    <li><code>List-Group</code>: Bulleted and numbered lists.</li>
+    <li><code>Table</code>: Grid tables rendered as HTML tables.</li>
+    <li><code>Caption</code>: Captions under figures and tables.</li>
+    <li><code>Footnote</code>: Bottom-of-page references.</li>
+    <li><code>Table-Of-Contents</code>: Outlines and indices.</li>
+    <li><code>Form</code>: Form fields and key-value inputs.</li>
+  </ul>
+
+  <h2>License</h2>
+  <p>Code is Apache 2.0. Model weights use a modified OpenRAIL-M license (free for research, personal use, and startups under $20M funding/revenue).</p>
+
+  <footer>
+    <p>Indra OCR &bull; Refer to <a href="https://huggingface.co/datalab-to/indra-ocr" target="_blank">Hugging Face Model Card</a> for official weights and benchmarks.</p>
+  </footer>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Indra OCR - Batch Processing</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="brand-title">
+      <i class="nf nf-md-text_recognition"></i>
+      INDRA OCR
+    </div>
+    <nav class="main-nav">
+      <a href="index.html"><i class="nf nf-cod-terminal"></i> Studio</a>
+      <a href="batch.html" class="active"><i class="nf nf-md-layers_triple"></i> Batch</a>
+      <a href="model_info.html"><i class="nf nf-md-speedometer"></i> Benchmarks</a>
+    </nav>
+    <div class="header-meta">
+      <span class="status-badge"><span class="status-dot"></span> Batch Queue</span>
+    </div>
+  </header>
+
+  <div style="padding: 1rem 1.5rem; overflow-y: auto;">
+    <h2><i class="nf nf-md-layers_triple"></i> Batch Conversion Engine</h2>
+    <p style="margin-bottom: 1rem;">Process folders of PDFs and scans concurrently using multi-core ONNX inference.</p>
+
+  <fieldset>
+    <legend>1. Upload Multiple Files</legend>
+
+    <div id="batch-dropzone" class="dropzone">
+      <strong>Drop multiple PDFs or images here</strong>, or <u>click to select files</u>.
+      <input type="file" id="batch-file-input" multiple style="display:none" accept=".pdf,image/*">
+    </div>
+
+    <div id="batch-file-list" style="margin: 0.5rem 0;">
+      <em>No files selected.</em>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>2. Batch Pipeline Options</legend>
+
+    <div class="controls-grid">
+      <div>
+        <label for="opt-mode">OCR Mode:</label>
+        <select id="opt-mode">
+          <option value="auto" selected>auto (PDF layer + OCR fallback)</option>
+          <option value="ocr">ocr (Pure visual OCR)</option>
+          <option value="text">text (Text layer only)</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="opt-dpi">Render DPI:</label>
+        <input type="number" id="opt-dpi" value="200" min="72" max="400">
+      </div>
+
+      <div>
+        <label class="checkbox-label">
+          <input type="checkbox" id="opt-math">
+          Enable LaTeX Math recognition
+        </label>
+      </div>
+
+      <div>
+        <label class="checkbox-label">
+          <input type="checkbox" id="opt-furniture">
+          Keep headers and footers
+        </label>
+      </div>
+    </div>
+
+    <div style="margin-top: 1rem;">
+      <button id="btn-batch-start" class="primary" disabled>Start Batch Conversion</button>
+      <button id="btn-download-zip" style="display: none;">Download All as ZIP (.zip)</button>
+    </div>
+  </fieldset>
+
+  <div id="batch-status" class="status-box" style="display: none;"></div>
+
+  <h2>Batch Results</h2>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Filename</th>
+        <th>Pages</th>
+        <th>Time</th>
+        <th>Speed</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="batch-results-body">
+      <tr>
+        <td colspan="6">No files processed yet.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <footer>
+    <p>Indra OCR &bull; Fast CPU batch inference powered by ONNX Runtime &bull; Zero PyTorch bloat.</p>
+  </footer>
+  </div>
+
+  <script src="js/batch.js"></script>
+</body>
+</html>

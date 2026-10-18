@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Indra OCR - Studio</title>
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Math & Markdown renderers -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
+</head>
+<body>
+
+  <!-- Top App Header -->
+  <header class="app-header">
+    <div class="brand-title">
+      <i class="nf nf-md-text_recognition"></i>
+      INDRA OCR
+    </div>
+    <nav class="main-nav">
+      <a href="index.html" class="active"><i class="nf nf-cod-terminal"></i> Studio</a>
+      <a href="batch.html"><i class="nf nf-md-layers_triple"></i> Batch</a>
+      <a href="model_info.html"><i class="nf nf-md-speedometer"></i> Benchmarks</a>
+    </nav>
+    <div class="header-meta">
+      <span class="status-badge">
+        <span class="status-dot"></span>
+        <span id="backend-status-text">1M ONNX &bull; 49 p/s</span>
+      </span>
+    </div>
+  </header>
+
+  <!-- Intuitive Control Bar -->
+  <div class="control-bar">
+    
+    <!-- Document Selector & Samples -->
+    <div class="control-group">
+      <span class="label-title"><i class="nf nf-fa-file"></i> Input:</span>
+      <button id="btn-upload" type="button"><i class="nf nf-fa-upload"></i> Upload</button>
+      <input type="file" id="file-input" style="display:none" accept=".pdf,image/*">
+      
+      <span class="label-title" style="margin-left: 0.5rem;"><i class="nf nf-fa-bookmark"></i> Samples:</span>
+      <div id="samples-container" style="display: inline-flex; gap: 4px;">
+        <!-- Injected via JS -->
+      </div>
+    </div>
+
+    <!-- Pipeline Mode & Options -->
+    <div class="control-group">
+      <span class="label-title"><i class="nf nf-fa-cog"></i> Mode:</span>
+      <div class="segmented-control">
+        <label>
+          <input type="radio" name="opt-mode-radio" value="auto" checked>
+          <span><i class="nf nf-md-lightning_bolt"></i> Auto</span>
+        </label>
+        <label>
+          <input type="radio" name="opt-mode-radio" value="ocr">
+          <span><i class="nf nf-fa-camera"></i> Pure OCR</span>
+        </label>
+        <label>
+          <input type="radio" name="opt-mode-radio" value="text">
+          <span><i class="nf nf-fa-file_text"></i> Text Layer</span>
+        </label>
+      </div>
+
+      <label class="checkbox-pill" title="Recognize LaTeX math ($...)">
+        <input type="checkbox" id="opt-math">
+        <span><i class="nf nf-md-sigma"></i> Math</span>
+      </label>
+
+      <label class="checkbox-pill" title="Keep page running headers and footers">
+        <input type="checkbox" id="opt-furniture">
+        <span><i class="nf nf-md-table_headers_eye"></i> Headers/Footers</span>
+      </label>
+
+      <label class="checkbox-pill" title="OCR images inside digital PDFs">
+        <input type="checkbox" id="opt-image-ocr" checked>
+        <span><i class="nf nf-fa-image"></i> Image OCR</span>
+      </label>
+
+      <label class="checkbox-pill" title="Reorder lines with layout model">
+        <input type="checkbox" id="opt-model-order">
+        <span><i class="nf nf-fa-sort_numeric_asc"></i> Order Model</span>
+      </label>
+
+      <button id="btn-run" class="primary" type="button">
+        <i class="nf nf-fa-play"></i> Run Page OCR
+      </button>
+
+      <button id="btn-convert-all" class="btn" type="button" title="Convert entire document (up to 200 pages)">
+        <i class="nf nf-md-file_document_multiple"></i> Convert All Pages
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Main Viewport -->
+  <main class="main-workspace">
+    
+    <!-- Left Pane: Document Canvas -->
+    <section class="pane-canvas">
+      <div class="pane-toolbar">
+        <div>
+          <button id="btn-prev" disabled><i class="nf nf-fa-chevron_left"></i></button>
+          <span style="font-weight: 700; margin: 0 4px;">
+            Page <input type="number" id="jump-page-input" min="1" max="200" value="1" style="width: 44px; padding: 1px 3px; text-align: center; border: 1px solid var(--border); font-family: inherit; font-weight: 700; font-size: 0.82rem;"> of <span id="total-pages-count">1</span>
+          </span>
+          <button id="btn-next" disabled><i class="nf nf-fa-chevron_right"></i></button>
+          <span id="doc-title" style="margin-left: 8px; font-weight: 700;">No file loaded</span>
+        </div>
+
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <label class="checkbox-pill" style="padding: 2px 6px;">
+            <input type="checkbox" id="toggle-blocks" checked> Blocks
+          </label>
+          <label class="checkbox-pill" style="padding: 2px 6px;">
+            <input type="checkbox" id="toggle-lines"> Lines
+          </label>
+          <label class="checkbox-pill" style="padding: 2px 6px;">
+            <input type="checkbox" id="toggle-order"> Sequence
+          </label>
+        </div>
+
+        <div>
+          <button id="btn-zoom-out" title="Zoom out">-</button>
+          <button id="btn-zoom-reset" title="Reset zoom">1:1</button>
+          <button id="btn-zoom-in" title="Zoom in">+</button>
+        </div>
+      </div>
+
+      <div id="canvas-viewport" class="canvas-viewport">
+        <div id="canvas-wrapper" class="canvas-wrapper">
+          <img id="canvas-img" class="canvas-image" alt="Upload a PDF or click a sample to inspect">
+          <div id="overlay-container" class="overlay-container"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right Pane: Output Inspector -->
+    <section class="pane-inspector">
+      <div class="tabs-bar">
+        <button class="tab-btn active" data-target="tab-markdown">
+          <i class="nf nf-md-markdown"></i> Markdown
+        </button>
+        <button class="tab-btn" data-target="tab-raw">
+          <i class="nf nf-cod-code"></i> Raw MD
+        </button>
+        <button class="tab-btn" data-target="tab-text">
+          <i class="nf nf-fa-align_left"></i> Plain Text
+        </button>
+        <button class="tab-btn" data-target="tab-json">
+          <i class="nf nf-cod-json"></i> JSON
+        </button>
+        <button class="tab-btn" data-target="tab-telemetry">
+          <i class="nf nf-fa-tachometer"></i> Telemetry
+        </button>
+
+        <div class="tab-actions">
+          <button id="btn-copy" title="Copy current view to clipboard">
+            <i class="nf nf-fa-copy"></i> Copy
+          </button>
+          <button id="btn-download" title="Download current output">
+            <i class="nf nf-fa-download"></i> Download
+          </button>
+        </div>
+      </div>
+
+      <!-- Tab 1: Rendered Markdown -->
+      <div id="tab-markdown" class="tab-content-area active">
+        <div id="tab-markdown-content" class="markdown-view">
+          <p><em>Select a sample above or drop a document to inspect OCR results.</em></p>
+        </div>
+      </div>
+
+      <!-- Tab 2: Raw Markdown -->
+      <div id="tab-raw" class="tab-content-area">
+        <textarea id="raw-markdown-view" class="code-box" readonly placeholder="Raw markdown..."></textarea>
+      </div>
+
+      <!-- Tab 3: Plain Text -->
+      <div id="tab-text" class="tab-content-area">
+        <textarea id="plain-text-view" class="code-box" readonly placeholder="Plain text lines..."></textarea>
+      </div>
+
+      <!-- Tab 4: JSON Output -->
+      <div id="tab-json" class="tab-content-area">
+        <textarea id="json-view" class="code-box" readonly placeholder="Structured JSON..."></textarea>
+      </div>
+
+      <!-- Tab 5: Telemetry -->
+      <div id="tab-telemetry" class="tab-content-area">
+        <h3 style="margin-bottom: 0.75rem;"><i class="nf nf-md-speedometer"></i> Performance & Extraction Diagnostics</h3>
+        <table class="telemetry-table">
+          <thead>
+            <tr><th>Stage / Property</th><th>Value</th></tr>
+          </thead>
+          <tbody id="telemetry-table-body">
+            <tr><td colspan="2">No page processed yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <div id="status-toast" class="status-toast"></div>
+  <div id="ocr-tooltip" class="ocr-tooltip"></div>
+
+  <script src="js/studio.js"></script>
+</body>
+</html>
