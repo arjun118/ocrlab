@@ -13,16 +13,19 @@
 
 ## Table of Contents
 1. [Overview & Highlights](#overview--highlights)
-2. [System Architecture & Deep Dive](#system-architecture--deep-dive)
-3. [Deep Tradeoff Analysis](#deep-tradeoff-analysis)
-4. [Model Card & Engine Analysis (Indra OCR)](#model-card--engine-analysis-indra-ocr)
-5. [Storage Schema & Volume Persistence](#storage-schema--volume-persistence)
-6. [Quick Start & Deployment Commands](#quick-start--deployment-commands)
+2. [Visual Studio Tour & Demo Gallery](#visual-studio-tour--demo-gallery)
+3. [Local Capabilities: Everything You Can Do On Your Machine](#local-capabilities-everything-you-can-do-on-your-machine)
+4. [Multi-File Batch Conversion Engine](#multi-file-batch-conversion-engine)
+5. [System Architecture & Deep Dive](#system-architecture--deep-dive)
+6. [Deep Tradeoff Analysis](#deep-tradeoff-analysis)
+7. [Model Card & Engine Analysis (Indra OCR)](#model-card--engine-analysis-indra-ocr)
+8. [Storage Schema & Volume Persistence](#storage-schema--volume-persistence)
+9. [Quick Start & Deployment Commands](#quick-start--deployment-commands)
    - [Docker (Recommended)](#docker-recommended)
    - [Docker Compose](#docker-compose)
    - [Bare-Metal Local Development](#bare-metal-local-development)
-7. [API Reference](#api-reference)
-8. [Benchmarking & Performance](#benchmarking--performance)
+10. [API Reference](#api-reference)
+11. [Benchmarking & Performance](#benchmarking--performance)
 
 ---
 
@@ -36,6 +39,138 @@ OCR Lab is a self-hosted, CPU-first document extraction studio built to convert 
 - **Persistent Local Database**: Built-in SQLite Write-Ahead Logging (WAL) database with automatic SHA-256 deduplication and per-page caching.
 - **Zero Cloud Dependencies**: 100% private and air-gapped. No telemetry, no external API keys, and no GPU needed.
 - **Single-Container Deployment**: Multi-stage Docker container serves both the React/TypeScript frontend and FastAPI backend from port `8000`.
+
+---
+
+## Visual Studio Tour & Demo Gallery
+
+### 1. Hybrid Presentation Intelligence & Speaker Notes (`.pptx`)
+
+PowerPoint decks are parsed using a tri-brid engine: LibreOffice renders a 200 DPI visual canvas, `python-pptx` extracts digital text frames and table cells, and Indra OCR reads trapped text inside raster images.
+
+![Slide 2 Hybrid Presentation Extraction](demo/pic1.png)
+
+*Figure 1: `quarterly-business-review-example.pptx` (Slide 2). Left: Visual canvas with 1:1 EMU-to-pixel bounding boxes color-coded by semantic role (`Section-Header`, `Caption`, `Table`, `Footnote`). Right: Rendered Markdown table with currency preservation and automated 📝 **Speaker Notes** extraction.*
+
+---
+
+![Slide 4 Presentation Variance Extraction](demo/pic2.png)
+
+*Figure 2: `quarterly-business-review-example.pptx` (Slide 4). High-precision table extraction preserving negative financial currency figures (`-$0.18m`, `+$0.05m`, `-$0.10m`) without KaTeX math formula collisions, alongside extracted speaker notes.*
+
+---
+
+### 2. Architectural Flowcharts & Complex Process Diagrams
+
+Diagrams, flowcharts, and technical layouts are accurately segmented, preserving heading hierarchy and reading sequences.
+
+![Architectural Flowchart and Report Extraction](demo/pic3.png)
+
+*Figure 3: `Flipkart_Sales_Dashboard_Report.pdf` (Page 12/16). Flowchart process blocks (`Extract -> Transform -> Load -> Analyze -> Visualize`) recognized, segmented, and formatted into clean structural markdown and hierarchical subheadings (`4.3 Design Diagrams`, `5. Implementation`, `5.1 Technology Stack`).*
+
+---
+
+### 3. High-Density Multi-Column Benchmark Matrices
+
+Complex data tables with multiple metrics, sub-columns, and footnotes are preserved with exact column alignments.
+
+![High Density LLM Benchmark Table Extraction](demo/pic4.png)
+
+*Figure 4: `Databricks Big Book Of GenAI FINAL.pdf` (Page 11/118). An 11-column LLM benchmark table (`DBRX`, `GPT-3.5`, `GPT-4`, `Claude 3`, `Gemini`, `Mistral`) extracted with sub-benchmarks (`MT Bench`, `MMLU`, `GSM8k`, `HumanEval`) and table caption intact.*
+
+---
+
+### 4. Massive Scientific Books & LaTeX Math Rendering
+
+OCR Lab handles massive books with zero artificial page limits or memory bottlenecks, rendering scientific equations in real time with KaTeX.
+
+![Scientific Book with LaTeX Math](demo/pic5.png)
+
+*Figure 5: `game theory a playful introduction.pdf` (Page 31 of 361 pages). Heavy mathematical formulas (`\mathcal{R}_i`, `T_1, \dots, T_\ell`, `\mathcal{L}`, `\pm`, `\emptyset`), game theory payoff matrices (`root label | result`), and theorems (`Corollary 1.11`) parsed in sub-100ms.*
+
+---
+
+## Local Capabilities: Everything You Can Do On Your Machine
+
+When running OCR Lab locally on your workstation or private server, you have access to a complete document intelligence suite:
+
+### 1. 100% Air-Gapped Local Privacy
+- **Zero External Calls**: Inference runs completely on CPU via ONNX Runtime. No data is ever transmitted to OpenAI, Anthropic, Hugging Face, or third-party APIs.
+- **Confidential Document Safe**: Process internal financial audits, pitch decks, medical records, legal contracts, and proprietary source code with total peace of mind.
+
+### 2. Interactive Studio Mode (`StudioView`)
+- **Interactive Canvas Zoom & Pan**: Freely zoom from 25% to 400% with high-DPI canvas smoothing.
+- **Visual Bounding Box Toggles**:
+  - `Blocks`: High-level layout segments (Headers, Paragraphs, Tables, Captions, Footers).
+  - `Lines`: Granular line-level bounding polygons with confidence scores.
+  - `Sequence`: Visualizes the natural reading order detected by the layout sequencing model.
+- **Semantic Color Coding**:
+  - <span style="color:#818cf8;font-weight:bold;">Section-Header (Purple)</span>: Headings and titles.
+  - <span style="color:#2dd4bf;font-weight:bold;">Table (Cyan)</span>: Tabular grids and metrics.
+  - <span style="color:#f472b6;font-weight:bold;">Caption (Pink)</span>: Subtitles and figure labels.
+  - <span style="color:#94a3b8;font-weight:bold;">Text (Gray)</span>: Standard body copy.
+  - <span style="color:#fbbf24;font-weight:bold;">Footnote (Amber)</span>: Slide disclaimers and citations.
+- **Cross-Highlighting**: Hovering over any bounding box instantly highlights and scrolls to its corresponding text block in the right-hand inspector.
+
+### 3. Full-Spectrum Output Inspection
+Switch instantly between 5 dedicated developer views:
+- **`Rendered`**: Styled GitHub Flavored Markdown with interactive HTML tables and KaTeX-rendered equations.
+- **`Raw MD`**: Clean Markdown text with one-click copy to clipboard for pasting into Obsidian, Notion, or LLM prompts.
+- **`Text`**: Pure unformatted raw string stream.
+- **`JSON`**: Complete Abstract Syntax Tree (AST) containing bounding box coordinates (`[ymin, xmin, ymax, xmax]`), block classifications, confidence scores, rotation angles, and skew metrics.
+- **`Telemetry`**: Sub-millisecond latency waterfall chart tracking `render_ms`, `detection_ms`, `recognition_ms`, `order_ms`, and `total_ms`.
+
+### 4. Tri-Brid Presentation Processing (`.pptx` / `.ppt`)
+- **Direct Canvas Mapping**: PowerPoint EMU coordinates are translated 1:1 to preview pixels.
+- **Digital Structure Extraction**: Preserves native fonts, bolding, bullet hierarchies, and table cells.
+- **Embedded Screenshot OCR**: Any raster screenshot pasted into a slide is automatically identified and read via Indra OCR.
+- **Speaker Notes Capture**: Hidden presenter notes are extracted and formatted as blockquotes (`> 📝 Speaker Notes`).
+
+### 5. Collision-Free LaTeX Math Engine
+- Built-in detection for mathematical symbols and equations.
+- **Guarded Parser**: Regex rules prevent financial currency (`$2.40m`, `-$0.18m`) and markdown table column separators (`|`) from colliding with KaTeX delimiters.
+
+### 6. Unlimited Local Scale
+- **No File Size Caps**: Process 500+ MB PDFs or high-resolution TIFF scans without out-of-memory crashes.
+- **No Page Count Limits**: Easily read 300+ page books and complete annual reports.
+- **Zero Memory Leaks**: Streamed rendering with automatic garbage collection of PDFium and LibreOffice subprocess handles.
+
+### 7. Persistent Local Storage & Fast Caching
+- **SQLite WAL Storage**: All uploads and extraction results are stored in [`data/indra_ocr.db`](file:///home/cicada/dev/ocr/data/indra_ocr.db).
+- **SHA-256 Deduplication**: Identical files share storage blocks inside [`data/files/`](file:///home/cicada/dev/ocr/data/files).
+- **0 ms Instant Re-Hits**: Switching between previously processed pages loads results instantaneously from SQLite cache.
+- **One-Click Wipe**: A dedicated "Clear All History" button cleanly unlinks files and resets the database.
+
+---
+
+## Multi-File Batch Conversion Engine
+
+For batch document ingestion, OCR Lab features a high-throughput **Batch Processing Tab (`BatchView`)**:
+
+```
+ ┌────────────────────────────────────────────────────────────────────────┐
+ │                      Multi-File Batch Conversion                       │
+ ├────────────────────────────────────────────────────────────────────────┤
+ │ 1. Upload Queue: Drop folders of PDFs, PPTs, and scans (Unlimited)     │
+ │ 2. Batch Parameters: Mode (Auto/OCR/Text) | LaTeX Math | DPI (150-300) │
+ │ 3. Multi-Core Execution: ONNX Runtime CPU multi-threading (8 cores)    │
+ │ 4. Real-Time Telemetry: Live pages/sec counter and per-file progress   │
+ │ 5. One-Click Bulk Export: Download all results as a single ZIP bundle  │
+ └────────────────────────────────────────────────────────────────────────┘
+```
+
+### Key Batch Features:
+1. **Bulk Ingestion**: Drag-and-drop dozens of mixed files (`.pdf`, `.pptx`, `.ppt`, `.png`, `.jpg`, `.webp`) simultaneously.
+2. **Multi-Core Parallelism**: Harnesses all CPU cores via ONNX Runtime multi-threading (`INDRA_THREADS=8`), achieving processing speeds up to **49.4 pages/second**.
+3. **Flexible Parameter Control**:
+   - `Mode`: Select `auto` (smart digital/OCR hybrid), `ocr` (pure visual neural pass), or `text` (fast digital extract).
+   - `LaTeX Math`: Enable/disable KaTeX equation parsing across all files.
+   - `Headers/Footers`: Include or exclude running headers and page footers.
+4. **Live Status Matrix**:
+   - Displays real-time progress for each file: filename, page count, processing latency, throughput speed (`pages/s`), and status pill (`success` / `error`).
+   - Direct download links for individual Markdown (`[.md]`) and plain text (`[.txt]`) outputs.
+5. **One-Click ZIP Export**:
+   - Click **Download All as ZIP (.zip)** to instantly bundle all converted Markdown files into `indra_ocr_batch_results.zip`.
 
 ---
 
