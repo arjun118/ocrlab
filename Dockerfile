@@ -11,9 +11,43 @@ COPY frontend/ ./
 RUN npm run build
 
 # ----------------------------------------------------
-# Stage 2: Minimal Python Runtime
+# Stage 2: Python Virtualenv & Model Builder
 # ----------------------------------------------------
-FROM python:3.12-slim-bookworm
+FROM python:3.12-slim AS python-builder
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
+# Install binutils for stripping binary shared libraries
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    binutils \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install uv for fast, reproducible dependency resolution
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
+
+WORKDIR /app
+
+# Copy dependency specifications and install into virtualenv using BuildKit cache
+COPY pyproject.toml uv.lock ./
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-dev --no-install-project
+
+# Copy model helper and download model weights (main branch) during build
+COPY backend/prepare_model.py /app/backend/prepare_model.py
+COPY model/ /app/model/
+RUN --mount=type=cache,target=/root/.cache/huggingface \
+    /app/.venv/bin/python -m backend.prepare_model /app/model main
+
+# Strip binary shared libraries and clean bytecode caches to minimize size
+RUN find /app/.venv -name "*.so*" -exec strip --strip-unneeded {} + 2>/dev/null || true \
+    && find /app/.venv -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true \
+    && find /app/.venv -name "*.pyc" -delete
+
+# ----------------------------------------------------
+# Stage 3: Minimal Final Runtime Image
+# ----------------------------------------------------
+FROM python:3.12-slim
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
@@ -26,28 +60,22 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libreoffice-nogui \
     libgl1 \
     libglib2.0-0 \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install uv for fast, reproducible dependency resolution
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/* /usr/share/man/*
 
 WORKDIR /app
 
-# Copy dependency specifications and install into virtualenv
-COPY pyproject.toml uv.lock ./
-RUN uv sync --frozen --no-dev --no-install-project
+# Copy stripped virtualenv from python-builder
+COPY --from=python-builder /app/.venv /app/.venv
 
-# Copy application source
-COPY backend/ /app/backend/
+# Copy pre-downloaded model weights from python-builder
+COPY --from=python-builder /app/model /app/model
 
 # Copy built frontend assets from stage 1
 COPY --from=frontend-builder /app/frontend/dist /app/frontend/dist
 
-# Copy local model weights into container
-COPY model/ /app/model/
-
-# Ensure required ONNX models are present in /app/model (downloads during build if missing)
-RUN /app/.venv/bin/python -m backend.prepare_model /app/model
+# Copy application source
+COPY backend/ /app/backend/
 
 # Expose port and declare persistent volume for SQLite DB and uploaded files
 EXPOSE 8000

@@ -129,8 +129,8 @@ class ModelService:
     def _get_ocr(self, math: bool, furniture: bool) -> OrtOCR:
         key = (math, furniture)
         if key not in self.ocrs:
-            model_path = MODEL_DIR if (MODEL_DIR.exists() and any(MODEL_DIR.iterdir())) else None
-            onnx = model_dir(path=model_path, math=math)
+            model_path = MODEL_DIR if (MODEL_DIR.exists() and (MODEL_DIR / "det.onnx").exists()) else None
+            onnx = model_dir(path=model_path, revision="main", math=math)
             ocr = OrtOCR(
                 onnx,
                 threads=self.threads,

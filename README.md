@@ -422,7 +422,7 @@ cp -L -r ~/.cache/huggingface/hub/models--datalab-to--indra-ocr/snapshots/*/* mo
 ./scripts/prepare_model.sh
 ```
 
-*(Note: If `./model/` is empty during build, the Dockerfile will download Indra OCR v3.1.1 from Hugging Face into `/app/model` automatically).*
+*(Note: If `./model/` is empty during build, the multi-stage Dockerfile will download Indra OCR models (`main` branch) from Hugging Face into `/app/model` automatically).*
 
 #### 2. Build & Run Container
 

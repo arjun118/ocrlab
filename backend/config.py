@@ -22,8 +22,10 @@ THREADS = int(os.environ.get("INDRA_THREADS", min(os.cpu_count() or 4, 8)))
 
 # Model directory (container /app/model or local ./model)
 MODEL_DIR = Path(os.environ.get("INDRA_OCR_MODEL_DIR", "/app/model" if Path("/app/model").exists() else PROJECT_DIR / "model"))
-if MODEL_DIR.exists():
+if MODEL_DIR.exists() and (MODEL_DIR / "det.onnx").exists():
     os.environ["INDRA_OCR_MODEL_DIR"] = str(MODEL_DIR)
+elif "INDRA_OCR_MODEL_DIR" in os.environ and not (MODEL_DIR / "det.onnx").exists():
+    os.environ.pop("INDRA_OCR_MODEL_DIR", None)
 
 # Host and Port
 HOST = os.environ.get("INDRA_HOST", "0.0.0.0")
